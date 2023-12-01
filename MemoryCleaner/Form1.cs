@@ -1,16 +1,8 @@
 ﻿using IWshRuntimeLibrary;
 using MaterialSkin;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace MemoryCleaner
 {
@@ -21,6 +13,7 @@ namespace MemoryCleaner
         public _MemoryCleaner MemoryCleaner = new _MemoryCleaner();
         public static Form1 CurrentForm;
         private bool AppStarted = false;
+        private bool bypass = false;
 
         // Ini Form
         public Form1()
@@ -39,6 +32,15 @@ namespace MemoryCleaner
             SettingsHandler.ReadSettings();
             // App Started Boolean
             AppStarted = true;
+            // Set Timer if any at start
+            CheckForExistingTimer();
+        }
+
+        // Completely forgot about it, teehee. Function is pretty self explanatory.
+        private void CheckForExistingTimer()
+        {
+            bypass = true;
+            materialComboBox1_SelectedIndexChanged(this, null);
         }
 
         // Manual Clean Button
@@ -55,18 +57,21 @@ namespace MemoryCleaner
         {
             if (AppStarted)
             {
-                // Save Setting
-                SettingsHandler.SaveSettings();
-
-            // Proceed
-            if (materialComboBox1.SelectedItem.ToString() != "OFF")
-            {
-                int milliseconds = Int32.Parse(materialComboBox1.SelectedItem.ToString()) * 60000;
-                CleanerTimer.Interval = milliseconds;
-                CleanerTimer.Start();
-            } 
-            else
-                CleanerTimer.Stop();
+                if (!bypass)
+                    // Save Setting
+                    SettingsHandler.SaveSettings();
+                else
+                    // Reset save settings bypass
+                    bypass = false;
+                // Proceed
+                if (materialComboBox1.SelectedItem.ToString() != "OFF")
+                {
+                    int milliseconds = Int32.Parse(materialComboBox1.SelectedItem.ToString()) * 60000;
+                    CleanerTimer.Interval = milliseconds;
+                    CleanerTimer.Start();
+                }
+                else
+                    CleanerTimer.Stop();
             }
         }
 
@@ -79,6 +84,7 @@ namespace MemoryCleaner
             thread1.Start();
         }
 
+        // Start MemClean Routine
         private void StartClean() =>
             MemoryCleaner.CleanMem(materialCheckbox2.Checked);
 
@@ -158,7 +164,7 @@ namespace MemoryCleaner
         // About
         private void materialButton3_Click(object sender, EventArgs e)
         {
-            MaterialSkin.Controls.MaterialMessageBox.Show($"Made by Endless (Kogaruh){Environment.NewLine}Version: 1.0{Environment.NewLine}Run as admin for best results!");
+            MaterialSkin.Controls.MaterialMessageBox.Show($"Made by Endless (Kogaruh){Environment.NewLine}Version: 1.1{Environment.NewLine}Run as admin for best results!");
         }
     }
 }
