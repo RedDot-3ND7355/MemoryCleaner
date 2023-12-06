@@ -86,7 +86,7 @@ namespace MemoryCleaner
 
         // Start MemClean Routine
         private void StartClean() =>
-            MemoryCleaner.CleanMem(materialCheckbox2.Checked);
+            MemoryCleaner.CleanMem(materialCheckbox2.Checked, materialCheckbox3.Checked);
 
         // Start with Windows
         private void materialCheckbox1_CheckedChanged(object sender, EventArgs e)
@@ -165,6 +165,14 @@ namespace MemoryCleaner
         private void materialButton3_Click(object sender, EventArgs e)
         {
             MaterialSkin.Controls.MaterialMessageBox.Show($"Made by Endless (Kogaruh){Environment.NewLine}Version: 1.1{Environment.NewLine}Run as admin for best results!");
+        }
+
+        // Toggle Standby Cache Memory Clear
+        private void materialCheckbox3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (AppStarted)
+                // Save Setting
+                SettingsHandler.SaveSettings();
         }
     }
 }

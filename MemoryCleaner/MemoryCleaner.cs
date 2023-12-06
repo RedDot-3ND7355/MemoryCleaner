@@ -2,7 +2,9 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime;
+using System.Security.Principal;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace MemoryCleaner
 {
@@ -27,7 +29,15 @@ namespace MemoryCleaner
             }
         }
 
-        public void CleanMem(bool advanced = false)
+        // Check if ran as admin
+        private static bool IsAdministrator()
+        {
+            var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+
+        public void CleanMem(bool advanced = false, bool cached = true)
         {
             try
             {
@@ -77,6 +87,24 @@ namespace MemoryCleaner
                         GC.Collect(2, GCCollectionMode.Forced, blocking: false);
                         GC.Collect(3, GCCollectionMode.Forced, blocking: false);
                         GC.WaitForPendingFinalizers();
+                        // Standby Cleaner
+                        try
+                        {
+                            if (cached && IsAdministrator())
+                            {
+                                Form1.CurrentForm.AddLauncherLog("Clearing Standby Cache...");
+                                new Win32_NtSetSystemInformation().ClearStandbyCache();
+                                Form1.CurrentForm.AddLauncherLog("Cleared Standby Cache");
+                            }
+                            else if (cached && !IsAdministrator())
+                            {
+                                Form1.CurrentForm.AddLauncherLog("Clearing Standby Cache requires admin.");
+                            }
+                        } 
+                        catch 
+                        {
+                            Form1.CurrentForm.AddLauncherLog("Failed to clear Standby Cache.");
+                        }
                     }
                     wait(2500);
                     if (RAMcs.IsCounters)

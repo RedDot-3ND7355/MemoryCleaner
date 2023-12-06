@@ -31,10 +31,10 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.materialCard1 = new MaterialSkin.Controls.MaterialCard();
-            this.materialComboBox1 = new MaterialSkin.Controls.MaterialComboBox();
-            this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
-            this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
             this.materialLabel3 = new MaterialSkin.Controls.MaterialLabel();
+            this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
+            this.materialComboBox1 = new MaterialSkin.Controls.MaterialComboBox();
+            this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
             this.materialDivider1 = new MaterialSkin.Controls.MaterialDivider();
             this.materialCheckbox1 = new MaterialSkin.Controls.MaterialCheckbox();
             this.materialMultiLineTextBox21 = new MaterialSkin.Controls.MaterialMultiLineTextBox2();
@@ -47,6 +47,7 @@
             this.materialButton2 = new MaterialSkin.Controls.MaterialButton();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.materialButton3 = new MaterialSkin.Controls.MaterialButton();
+            this.materialCheckbox3 = new MaterialSkin.Controls.MaterialCheckbox();
             this.materialCard1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -63,8 +64,35 @@
             this.materialCard1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialCard1.Name = "materialCard1";
             this.materialCard1.Padding = new System.Windows.Forms.Padding(14);
-            this.materialCard1.Size = new System.Drawing.Size(252, 143);
+            this.materialCard1.Size = new System.Drawing.Size(252, 134);
             this.materialCard1.TabIndex = 1;
+            // 
+            // materialLabel3
+            // 
+            this.materialLabel3.AutoSize = true;
+            this.materialLabel3.Depth = 0;
+            this.materialLabel3.Font = new System.Drawing.Font("Roboto", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel3.FontType = MaterialSkin.MaterialSkinManager.fontType.H5;
+            this.materialLabel3.Location = new System.Drawing.Point(150, 72);
+            this.materialLabel3.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel3.Name = "materialLabel3";
+            this.materialLabel3.Size = new System.Drawing.Size(87, 29);
+            this.materialLabel3.TabIndex = 2;
+            this.materialLabel3.Text = "Minutes";
+            // 
+            // materialLabel1
+            // 
+            this.materialLabel1.AutoSize = true;
+            this.materialLabel1.Depth = 0;
+            this.materialLabel1.Font = new System.Drawing.Font("Roboto", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
+            this.materialLabel1.FontType = MaterialSkin.MaterialSkinManager.fontType.H5;
+            this.materialLabel1.HighEmphasis = true;
+            this.materialLabel1.Location = new System.Drawing.Point(34, 18);
+            this.materialLabel1.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel1.Name = "materialLabel1";
+            this.materialLabel1.Size = new System.Drawing.Size(180, 29);
+            this.materialLabel1.TabIndex = 1;
+            this.materialLabel1.Text = "Interval Cleaning";
             // 
             // materialComboBox1
             // 
@@ -75,7 +103,7 @@
             this.materialComboBox1.DropDownHeight = 174;
             this.materialComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.materialComboBox1.DropDownWidth = 121;
-            this.materialComboBox1.Font = new System.Drawing.Font("Roboto Medium", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
+            this.materialComboBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
             this.materialComboBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.materialComboBox1.FormattingEnabled = true;
             this.materialComboBox1.IntegralHeight = false;
@@ -90,7 +118,7 @@
             "30",
             "45",
             "60"});
-            this.materialComboBox1.Location = new System.Drawing.Point(17, 75);
+            this.materialComboBox1.Location = new System.Drawing.Point(17, 64);
             this.materialComboBox1.MaxDropDownItems = 4;
             this.materialComboBox1.MouseState = MaterialSkin.MouseState.OUT;
             this.materialComboBox1.Name = "materialComboBox1";
@@ -98,20 +126,6 @@
             this.materialComboBox1.StartIndex = 0;
             this.materialComboBox1.TabIndex = 0;
             this.materialComboBox1.SelectedIndexChanged += new System.EventHandler(this.materialComboBox1_SelectedIndexChanged);
-            // 
-            // materialLabel1
-            // 
-            this.materialLabel1.AutoSize = true;
-            this.materialLabel1.Depth = 0;
-            this.materialLabel1.Font = new System.Drawing.Font("Roboto", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
-            this.materialLabel1.FontType = MaterialSkin.MaterialSkinManager.fontType.H5;
-            this.materialLabel1.HighEmphasis = true;
-            this.materialLabel1.Location = new System.Drawing.Point(34, 24);
-            this.materialLabel1.MouseState = MaterialSkin.MouseState.HOVER;
-            this.materialLabel1.Name = "materialLabel1";
-            this.materialLabel1.Size = new System.Drawing.Size(180, 29);
-            this.materialLabel1.TabIndex = 1;
-            this.materialLabel1.Text = "Interval Cleaning";
             // 
             // materialLabel2
             // 
@@ -124,19 +138,6 @@
             this.materialLabel2.Size = new System.Drawing.Size(112, 19);
             this.materialLabel2.TabIndex = 2;
             this.materialLabel2.Text = "Manual Cleaner";
-            // 
-            // materialLabel3
-            // 
-            this.materialLabel3.AutoSize = true;
-            this.materialLabel3.Depth = 0;
-            this.materialLabel3.Font = new System.Drawing.Font("Roboto", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
-            this.materialLabel3.FontType = MaterialSkin.MaterialSkinManager.fontType.H5;
-            this.materialLabel3.Location = new System.Drawing.Point(150, 83);
-            this.materialLabel3.MouseState = MaterialSkin.MouseState.HOVER;
-            this.materialLabel3.Name = "materialLabel3";
-            this.materialLabel3.Size = new System.Drawing.Size(87, 29);
-            this.materialLabel3.TabIndex = 2;
-            this.materialLabel3.Text = "Minutes";
             // 
             // materialDivider1
             // 
@@ -315,6 +316,25 @@
             this.materialButton3.UseVisualStyleBackColor = true;
             this.materialButton3.Click += new System.EventHandler(this.materialButton3_Click);
             // 
+            // materialCheckbox3
+            // 
+            this.materialCheckbox3.AutoSize = true;
+            this.materialCheckbox3.Checked = true;
+            this.materialCheckbox3.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.materialCheckbox3.Depth = 0;
+            this.materialCheckbox3.Location = new System.Drawing.Point(240, 208);
+            this.materialCheckbox3.Margin = new System.Windows.Forms.Padding(0);
+            this.materialCheckbox3.MouseLocation = new System.Drawing.Point(-1, -1);
+            this.materialCheckbox3.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialCheckbox3.Name = "materialCheckbox3";
+            this.materialCheckbox3.ReadOnly = false;
+            this.materialCheckbox3.Ripple = true;
+            this.materialCheckbox3.Size = new System.Drawing.Size(260, 37);
+            this.materialCheckbox3.TabIndex = 14;
+            this.materialCheckbox3.Text = "Clear Standby(Cached) Memory";
+            this.materialCheckbox3.UseVisualStyleBackColor = true;
+            this.materialCheckbox3.CheckedChanged += new System.EventHandler(this.materialCheckbox3_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -331,6 +351,7 @@
             this.Controls.Add(this.materialCard1);
             this.Controls.Add(this.materialCheckbox2);
             this.Controls.Add(this.materialCheckbox1);
+            this.Controls.Add(this.materialCheckbox3);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Form1";
@@ -363,6 +384,7 @@
         public MaterialSkin.Controls.MaterialCheckbox materialCheckbox2;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private MaterialSkin.Controls.MaterialButton materialButton3;
+        public MaterialSkin.Controls.MaterialCheckbox materialCheckbox3;
     }
 }
 

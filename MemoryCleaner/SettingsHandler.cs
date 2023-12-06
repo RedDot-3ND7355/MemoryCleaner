@@ -12,7 +12,7 @@ namespace MemoryCleaner
     public static class SettingsHandler
     {
         static string default_path = Path.GetDirectoryName(Application.ExecutablePath) + "\\Settings.conf";
-        static string default_text = $"Interval = OFF{Environment.NewLine}Startup = false{Environment.NewLine}Advanced = false";
+        static string default_text = $"Interval = OFF{Environment.NewLine}Startup = false{Environment.NewLine}Advanced = false{Environment.NewLine}Cached = true";
 
         // Initialize Settings
         public static void IniSettings() 
@@ -26,7 +26,7 @@ namespace MemoryCleaner
         public static void SaveSettings() 
         {
             // Save Current Settings
-            File.WriteAllText(default_path, $"Interval = {Form1.CurrentForm.materialComboBox1.SelectedItem.ToString()}{Environment.NewLine}Startup = {Form1.CurrentForm.materialCheckbox1.Checked.ToString()}{Environment.NewLine}Advanced = {Form1.CurrentForm.materialCheckbox2.Checked.ToString()}");
+            File.WriteAllText(default_path, $"Interval = {Form1.CurrentForm.materialComboBox1.SelectedItem.ToString()}{Environment.NewLine}Startup = {Form1.CurrentForm.materialCheckbox1.Checked.ToString()}{Environment.NewLine}Advanced = {Form1.CurrentForm.materialCheckbox2.Checked.ToString()}{Environment.NewLine}Cached = {Form1.CurrentForm.materialCheckbox3.Checked.ToString()}");
         }
 
         // Read Settings
@@ -51,6 +51,11 @@ namespace MemoryCleaner
                 {
                     _setting = setting.Replace("Advanced = ", "");
                     Form1.CurrentForm.materialCheckbox2.Checked = bool.Parse(_setting);
+                }
+                if (settings.Contains("Cached = ")) // boolean
+                {
+                    _setting = setting.Replace("Cached = ", "");
+                    Form1.CurrentForm.materialCheckbox3.Checked = bool.Parse(_setting);
                 }
             }
         }
