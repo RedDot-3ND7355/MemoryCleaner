@@ -13,3 +13,4 @@ Features:
 - Manual Cleaner
 - Start with windows
 - Show's cleaned processes with "Advanced" checked
+- Standby List Cleaning (Cached Memory)
