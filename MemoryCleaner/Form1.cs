@@ -1,6 +1,9 @@
 ﻿using IWshRuntimeLibrary;
 using MaterialSkin;
 using System;
+using System.Diagnostics;
+using System.Reflection;
+using System.Security.Principal;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -32,8 +35,18 @@ namespace MemoryCleaner
             SettingsHandler.ReadSettings();
             // App Started Boolean
             AppStarted = true;
+            // Restart as admin if clean cache is checked
+            CheckCachedCleanPerm();
             // Set Timer if any at start
             CheckForExistingTimer();
+        }
+
+        // Check Perms
+        private void CheckCachedCleanPerm()
+        {
+            // Check required perms
+            if (materialCheckbox3.Checked && !IsAdministrator())
+                RestartAsAdmin(Assembly.GetExecutingAssembly().Location);
         }
 
         // Completely forgot about it, teehee. Function is pretty self explanatory.
@@ -164,15 +177,47 @@ namespace MemoryCleaner
         // About
         private void materialButton3_Click(object sender, EventArgs e)
         {
-            MaterialSkin.Controls.MaterialMessageBox.Show($"Made by Endless (Kogaruh){Environment.NewLine}Version: 1.1{Environment.NewLine}Run as admin for best results!");
+            MaterialSkin.Controls.MaterialMessageBox.Show($"Made by Endless (Kogaruh){Environment.NewLine}Version: 1.6{Environment.NewLine}Run as admin for best results!");
         }
 
-        // Toggle Standby Cache Memory Clear
+        // Toggle Standby Cache Memory Clear (with admin check)
         private void materialCheckbox3_CheckedChanged(object sender, EventArgs e)
         {
             if (AppStarted)
                 // Save Setting
                 SettingsHandler.SaveSettings();
+
+            // Check required perms
+            CheckCachedCleanPerm();
+        }
+
+        // Check if ran as admin
+        private static bool IsAdministrator()
+        {
+            var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+
+        // Restart as admin
+        private void RestartAsAdmin(string exe)
+        {
+            var proc = new Process
+            {
+                StartInfo =
+                {
+                    FileName = exe,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                }
+            };
+            try
+            {
+                if (proc.Start())
+                    Process.GetCurrentProcess().Kill();
+                else
+                    materialCheckbox3.Checked = false;
+            } catch { materialCheckbox3.Checked = false; }
         }
     }
 }
