@@ -14,3 +14,4 @@ Features:
 - Start with windows
 - Show's cleaned processes with "Advanced" checked
 - Standby List Cleaning (Cached Memory)
+- Start with windows minimized to tray
