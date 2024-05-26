@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MemoryCleaner
@@ -17,6 +18,7 @@ namespace MemoryCleaner
         public static Form1 CurrentForm;
         private bool AppStarted = false;
         private bool bypass = false;
+        private string appver = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion.Replace(".0.0", "");
 
         // Ini Form
         public Form1()
@@ -35,10 +37,28 @@ namespace MemoryCleaner
             SettingsHandler.ReadSettings();
             // App Started Boolean
             AppStarted = true;
+            // Set Version
+            materialLabel5.Text = "v" + appver;
             // Restart as admin if clean cache is checked
             CheckCachedCleanPerm();
             // Set Timer if any at start
             CheckForExistingTimer();
+            // Set Minimized if config present
+            CheckForStartAsMinimized();
+        }
+
+        // Check Start as Minimized added for folks that wants to save 1 second of their time XD
+        private void CheckForStartAsMinimized()
+        {
+            if (materialCheckbox4.Checked)
+            {
+                notifyIcon1.Visible = true;
+                Task.Delay(50).ContinueWith(delegate
+                {
+                    CheckForIllegalCrossThreadCalls = false;
+                    this.Hide();
+                });
+            }
         }
 
         // Check Perms
@@ -175,10 +195,8 @@ namespace MemoryCleaner
         }
 
         // About
-        private void materialButton3_Click(object sender, EventArgs e)
-        {
-            MaterialSkin.Controls.MaterialMessageBox.Show($"Made by Endless (Kogaruh){Environment.NewLine}Version: 1.6{Environment.NewLine}Run as admin for best results!");
-        }
+        private void materialButton3_Click(object sender, EventArgs e) =>
+            MaterialSkin.Controls.MaterialMessageBox.Show($"Made by Endless (Kogaruh){Environment.NewLine}Version: {appver}{Environment.NewLine}Run as admin for best results!");
 
         // Toggle Standby Cache Memory Clear (with admin check)
         private void materialCheckbox3_CheckedChanged(object sender, EventArgs e)
@@ -218,6 +236,14 @@ namespace MemoryCleaner
                 else
                     materialCheckbox3.Checked = false;
             } catch { materialCheckbox3.Checked = false; }
+        }
+
+        // Save start as minimized
+        private void materialCheckbox4_CheckedChanged(object sender, EventArgs e)
+        {
+            if (AppStarted)
+                // Save Setting
+                SettingsHandler.SaveSettings();
         }
     }
 }
