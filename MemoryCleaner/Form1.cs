@@ -14,6 +14,7 @@ namespace MemoryCleaner
     {
         // Globals
         public readonly MaterialSkinManager materialSkinManager;
+        private BlackListGUI blackList;
         public _MemoryCleaner MemoryCleaner = new _MemoryCleaner();
         public static Form1 CurrentForm;
         private bool AppStarted = false;
@@ -45,6 +46,8 @@ namespace MemoryCleaner
             CheckForExistingTimer();
             // Set Minimized if config present
             CheckForStartAsMinimized();
+            // Ini Blacklist GUI
+            blackList = new BlackListGUI();
         }
 
         // Check Start as Minimized added for folks that wants to save 1 second of their time XD
@@ -191,7 +194,10 @@ namespace MemoryCleaner
         private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
         {
             this.Show();
+            this.TopMost = true;
             notifyIcon1.Visible = false;
+            Thread.Sleep(50);
+            this.TopMost = false;
         }
 
         // About
@@ -244,6 +250,17 @@ namespace MemoryCleaner
             if (AppStarted)
                 // Save Setting
                 SettingsHandler.SaveSettings();
+        }
+        
+        // Show Blacklist GUI
+        private void materialButton4_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+            blackList.ShowDialog();
+            this.Show();
+            this.TopMost = true;
+            Thread.Sleep(50);
+            this.TopMost = false;
         }
     }
 }

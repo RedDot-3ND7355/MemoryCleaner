@@ -44,7 +44,7 @@ namespace MemoryCleaner
                 // Make process list with opened Applications (TESTING PURPOSES)
                 // var processes = Process.GetProcesses().Where(p => p.MainWindowHandle != IntPtr.Zero).ToArray();
 
-                // Make process list with all Applications
+                // Make process list with all Processes
                 var processes = Process.GetProcesses();
                 Form1.CurrentForm.ResetLauncherLog();
                 int toclean_count = processes.Count();
@@ -67,6 +67,12 @@ namespace MemoryCleaner
                     {
                         foreach (Process prs_ss in processes)
                         {
+                            // Blacklist
+                            if (prs_ss != null && BlacklistHandler.blacklisted_processes.Contains(prs_ss.ProcessName + ".exe"))
+                            {
+                                Form1.CurrentForm.AddLauncherLog("Ignored Blacklisted Process: " + prs_ss.ProcessName);
+                                continue;
+                            }
                             if (advanced)
                                 Form1.CurrentForm.AddLauncherLog("Cleaning: " + prs_ss.ProcessName);
                             if (prs_ss != null)
