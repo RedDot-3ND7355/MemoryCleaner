@@ -44,6 +44,8 @@ namespace MemoryCleaner
             {
                 foreach (var process_name in openFileDialog1.FileNames)
                     BlacklistHandler.blacklisted_processes.Add(Path.GetFileName(process_name));
+                // Save changes
+                BlacklistHandler.SaveBL();
                 // Reload
                 LoadBL();
             }
