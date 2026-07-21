@@ -2,6 +2,7 @@
 using ReaLTaiizor.Forms;
 using ReaLTaiizor.Manager;
 using System;
+using System.IO;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Principal;
@@ -20,7 +21,33 @@ namespace MemoryCleaner
         public static Form1 CurrentForm;
         private bool AppStarted = false;
         private bool bypass = false;
-        private string appver = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion.Replace(".0.0", "");
+        private readonly string appver = GetAppVersion();
+
+        private static string GetAppVersion()
+        {
+            try
+            {
+                string? path = Environment.ProcessPath
+                    ?? Application.ExecutablePath;
+
+                if (string.IsNullOrWhiteSpace(path))
+                    path = Assembly.GetExecutingAssembly().Location;
+
+                if (!string.IsNullOrWhiteSpace(path) && System.IO.File.Exists(path))
+                {
+                    string? fileVersion = FileVersionInfo.GetVersionInfo(path).FileVersion;
+                    if (!string.IsNullOrWhiteSpace(fileVersion))
+                        return fileVersion.Replace(".0.0", "");
+                }
+
+                Version? version = Assembly.GetExecutingAssembly().GetName().Version;
+                return version?.ToString(3) ?? "0.0.0";
+            }
+            catch
+            {
+                return "0.0.0";
+            }
+        }
 
         // Ini Form
         public Form1()
@@ -70,7 +97,7 @@ namespace MemoryCleaner
         {
             // Check required perms
             if (materialCheckbox3.Checked && !IsAdministrator())
-                RestartAsAdmin(Assembly.GetExecutingAssembly().Location);
+                RestartAsAdmin(Environment.ProcessPath ?? Application.ExecutablePath);
         }
 
         // Completely forgot about it, teehee. Function is pretty self explanatory.
