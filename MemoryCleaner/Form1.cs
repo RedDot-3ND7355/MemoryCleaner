@@ -2,7 +2,6 @@
 using ReaLTaiizor.Forms;
 using ReaLTaiizor.Manager;
 using System;
-using System.IO;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Principal;
@@ -22,6 +21,9 @@ namespace MemoryCleaner
         private bool AppStarted = false;
         private bool bypass = false;
         private readonly string appver = GetAppVersion();
+        // Ram Overlay Globals
+        private RamOverlayForm? _ramOverlay;
+        private ToolStripMenuItem? _overlayToggleItem;
 
         private static string GetAppVersion()
         {
@@ -72,10 +74,135 @@ namespace MemoryCleaner
             CheckCachedCleanPerm();
             // Set Timer if any at start
             CheckForExistingTimer();
+            // Init Tray Menu
+            IniTrayMenu();
+            // Init RAM Overlay if Enabled
+            if (SettingsHandler.Current.OverlayEnabled)
+                SetOverlayEnabled(true);
             // Set Minimized if config present
             CheckForStartAsMinimized();
             // Ini Blacklist GUI
             blackList = new BlackListGUI();
+        }
+
+        private RamOverlayForm EnsureOverlay()
+        {
+            if (_ramOverlay == null || _ramOverlay.IsDisposed)
+            {
+                _ramOverlay = new RamOverlayForm();
+                _ramOverlay.SetPosition(SettingsHandler.GetOverlayPosition());
+            }
+
+            return _ramOverlay;
+        }
+
+        private void SetOverlayEnabled(bool enabled)
+        {
+            if (enabled)
+            {
+                EnsureOverlay().SetEnabled(true);
+            }
+            else if (_ramOverlay != null)
+            {
+                _ramOverlay.SetEnabled(false);
+                _ramOverlay.Dispose();
+                _ramOverlay = null;
+            }
+
+            SettingsHandler.SaveOverlaySettings(enabled, SettingsHandler.Current.OverlayPosition);
+        }
+
+        private void IniTrayMenu()
+        {
+            var menu = new ContextMenuStrip();
+
+            var cleanItem = new ToolStripMenuItem("Clean now");
+            cleanItem.Click += async (_, _) => await StartCleanAsync();
+
+            var openItem = new ToolStripMenuItem("Open");
+            openItem.Click += (_, _) => RestoreFromTray();
+
+            _overlayToggleItem = new ToolStripMenuItem("RAM overlay")
+            {
+                CheckOnClick = true,
+                Checked = SettingsHandler.Current.OverlayEnabled
+            };
+            _overlayToggleItem.CheckedChanged += (_, _) =>
+            {
+                SetOverlayEnabled(_overlayToggleItem.Checked);
+            };
+
+            var posMenu = new ToolStripMenuItem("Overlay position");
+            posMenu.DropDownItems.Add(MakePosItem("Top left", OverlayPosition.TopLeft));
+            posMenu.DropDownItems.Add(MakePosItem("Top right", OverlayPosition.TopRight));
+            posMenu.DropDownItems.Add(MakePosItem("Bottom left", OverlayPosition.BottomLeft));
+            posMenu.DropDownItems.Add(MakePosItem("Bottom right", OverlayPosition.BottomRight));
+
+
+            var exitItem = new ToolStripMenuItem("Exit");
+            exitItem.Click += (_, _) =>
+            {
+                notifyIcon1.Visible = false;
+                _ramOverlay?.Dispose();
+                _ramOverlay = null;
+                Application.Exit();
+            };
+
+            menu.Items.Add(cleanItem);
+            menu.Items.Add(openItem);
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(_overlayToggleItem);
+            menu.Items.Add(posMenu);
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(exitItem);
+
+            notifyIcon1.ContextMenuStrip = menu;
+            notifyIcon1.Text = "Memory Cleaner";
+            notifyIcon1.Visible = true;
+        }
+
+        private ToolStripMenuItem MakePosItem(string text, OverlayPosition position)
+        {
+            var item = new ToolStripMenuItem(text)
+            {
+                Checked = SettingsHandler.GetOverlayPosition() == position
+            };
+
+            item.Click += (_, _) =>
+            {
+                // 1) save first (works even if overlay isn't created yet)
+                SettingsHandler.SaveOverlaySettings(
+                    SettingsHandler.Current.OverlayEnabled,
+                    position.ToString());
+
+                // 2) apply only if overlay is currently alive
+                _ramOverlay?.SetPosition(position);
+
+                // 3) refresh checkmarks in the submenu
+                if (notifyIcon1.ContextMenuStrip == null) return;
+                foreach (ToolStripItem ti in notifyIcon1.ContextMenuStrip.Items)
+                {
+                    if (ti is ToolStripMenuItem { Text: "Overlay position" } parent)
+                    {
+                        foreach (ToolStripItem child in parent.DropDownItems)
+                        {
+                            if (child is ToolStripMenuItem mi)
+                                mi.Checked = mi.Text == text;
+                        }
+                    }
+                }
+            };
+
+            return item;
+        }
+
+        private void RestoreFromTray()
+        {
+            Show();
+            WindowState = FormWindowState.Normal;
+            Activate();
+            TopMost = true;
+            TopMost = false;
         }
 
         // Check Start as Minimized added for folks that wants to save 1 second of their time XD
@@ -84,7 +211,6 @@ namespace MemoryCleaner
             if (!materialCheckbox4.Checked)
                 return;
 
-            notifyIcon1.Visible = true;
             _ = Task.Delay(50).ContinueWith(_ =>
             {
                 if (!IsDisposed)
@@ -223,21 +349,19 @@ namespace MemoryCleaner
                 SettingsHandler.SaveSettings();
         }
 
+        // Minimize to tray button
+        private void materialButton1_Click(object sender, EventArgs e) =>
+            MinimizeToTray();
+
         // Minimize to tray
-        private void materialButton1_Click(object sender, EventArgs e)
-        {
-            notifyIcon1.Visible = true;
-            this.Hide();
-        }
+        private void MinimizeToTray() =>
+            Hide();
 
         // Recover window from tray
         private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
         {
-            this.Show();
-            this.TopMost = true;
-            notifyIcon1.Visible = false;
-            Thread.Sleep(50);
-            this.TopMost = false;
+            if (e.Button == MouseButtons.Left)
+                RestoreFromTray();
         }
 
         // About

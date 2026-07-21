@@ -1,12 +1,7 @@
-﻿using ReaLTaiizor.Controls;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MemoryCleaner
@@ -37,7 +32,10 @@ namespace MemoryCleaner
         public static void IniSettings()
         {
             if (File.Exists(JsonPath))
+            {
+                Current = ReadJsonOrDefault();
                 return;
+            }
 
             // Migrate legacy Settings.conf if present
             if (File.Exists(LegacyConfPath))
@@ -61,6 +59,22 @@ namespace MemoryCleaner
             WriteJson(Current);
         }
 
+        // Save Overlay Settings
+        public static void SaveOverlaySettings(bool enabled, string position)
+        {
+            Current.OverlayEnabled = enabled;
+            Current.OverlayPosition = position;
+            WriteJson(Current);
+        }
+
+        // Get Overlay Position
+        public static OverlayPosition GetOverlayPosition()
+        {
+            return Enum.TryParse(Current.OverlayPosition, true, out OverlayPosition pos)
+                ? pos
+                : OverlayPosition.TopRight;
+        }
+
         // Save Settings
         public static void SaveSettings()
         {
@@ -73,7 +87,10 @@ namespace MemoryCleaner
                 Startup = Form1.CurrentForm.materialCheckbox1.Checked,
                 Advanced = Form1.CurrentForm.materialCheckbox2.Checked,
                 Cached = Form1.CurrentForm.materialCheckbox3.Checked,
-                StartMinimized = Form1.CurrentForm.materialCheckbox4.Checked
+                StartMinimized = Form1.CurrentForm.materialCheckbox4.Checked,
+                // keep overlay values already on Current (saved from tray)
+                OverlayEnabled = Current.OverlayEnabled,
+                OverlayPosition = Current.OverlayPosition
             };
 
             WriteJson(Current);
@@ -155,6 +172,8 @@ namespace MemoryCleaner
             public bool Advanced { get; set; } = false;
             public bool Cached { get; set; } = true;
             public bool StartMinimized { get; set; } = false;
+            public bool OverlayEnabled { get; set; } = false;
+            public string OverlayPosition { get; set; } = "TopRight";
         }
 
         private static bool TryGetValue(string line, string prefix, out string value)

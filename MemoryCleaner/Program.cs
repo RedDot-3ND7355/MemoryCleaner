@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace MemoryCleaner
@@ -12,6 +10,9 @@ namespace MemoryCleaner
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
+        /// 
+        private static Mutex? _mutex;
+
         [STAThread]
         static void Main()
         {
@@ -23,6 +24,16 @@ namespace MemoryCleaner
                     ShowFatal(ex);
             };
 
+            const string mutexName = @"Local\MemoryCleaner_SingleInstance";
+            _mutex = new Mutex(true, mutexName, out bool createdNew);
+
+            if (!createdNew)
+            {
+                // Already running
+                MessageBox.Show("Memory Cleaner is already running.", "Memory Cleaner");
+                return;
+            }
+
             try
             {
                 ApplicationConfiguration.Initialize();
@@ -31,6 +42,11 @@ namespace MemoryCleaner
             catch (Exception ex)
             {
                 ShowFatal(ex);
+            }
+            finally
+            {
+                _mutex.ReleaseMutex();
+                _mutex.Dispose();
             }
         }
 
