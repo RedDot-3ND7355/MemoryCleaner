@@ -1,58 +1,85 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace MemoryCleaner
 {
     public class RAMcs
     {
-
-        public bool IsCounters
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private class MEMORYSTATUSEX
         {
-            get;
-            set;
+            public uint dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>();
+            public uint dwMemoryLoad;
+            public ulong ullTotalPhys;
+            public ulong ullAvailPhys;
+            public ulong ullTotalPageFile;
+            public ulong ullAvailPageFile;
+            public ulong ullTotalVirtual;
+            public ulong ullAvailVirtual;
+            public ulong ullAvailExtendedVirtual;
         }
 
-        public void _IsCounters()
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
+
+        private static MEMORYSTATUSEX Query()
+        {
+            var status = new MEMORYSTATUSEX();
+            if (!GlobalMemoryStatusEx(status))
+                throw new InvalidOperationException("GlobalMemoryStatusEx failed.");
+            return status;
+        }
+
+        /// <summary>Used physical memory percentage (0–100).</summary>
+        public float GetUsagePercent()
         {
             try
             {
-                var bool_ac = new PerformanceCounter("Memory", "Available Bytes", null);
-                bool_ac.Dispose();
-                IsCounters = true;
+                return Query().dwMemoryLoad;
             }
             catch
             {
-                IsCounters = false;
+                return 0f;
             }
         }
-        public float Current_Ram()
+
+        /// <summary>Available physical memory in bytes.</summary>
+        public ulong GetAvailableBytes()
         {
-            PerformanceCounter ram = new PerformanceCounter("Memory", "Available Bytes", null);
-            float available = ram.NextValue();
-            ram.Dispose();
-            return available;
-        }
-        public float Current_Usage()
-        {
-            var TotalRAM_Bytes = Convert.ToSingle(new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory);
-            var AvailableRAM_Bytes = new PerformanceCounter("Memory", "Available Bytes", null);
-            var UsedRAM_Bytes = TotalRAM_Bytes - AvailableRAM_Bytes.NextValue();
-            var PercentRAM_Bytes = (100 * UsedRAM_Bytes) / TotalRAM_Bytes;
-            AvailableRAM_Bytes.Dispose();
-            return PercentRAM_Bytes;
+            try
+            {
+                return Query().ullAvailPhys;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
-        public float No_Counters_Curr_Usage()
+        /// <summary>Total physical memory in bytes.</summary>
+        public ulong GetTotalBytes()
         {
-            var TotalRAM_Bytes = Convert.ToSingle(new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory);
-            var AvailableRAM_Bytes = Convert.ToSingle(new Microsoft.VisualBasic.Devices.ComputerInfo().AvailablePhysicalMemory);
-            var UsedRAM_Bytes = TotalRAM_Bytes - AvailableRAM_Bytes;
-            var PercentRAM_Bytes = (100 * UsedRAM_Bytes) / TotalRAM_Bytes;
-            return PercentRAM_Bytes;
+            try
+            {
+                return Query().ullTotalPhys;
+            }
+            catch
+            {
+                return 0;
+            }
         }
+
+        // ---- Back-compat wrappers ----
+
+        public bool IsCounters { get; set; } = true;
+
+        public void _IsCounters() => IsCounters = true;
+
+        public float Current_Ram() => GetAvailableBytes();
+
+        public float Current_Usage() => GetUsagePercent();
+
+        public float No_Counters_Curr_Usage() => GetUsagePercent();
     }
 }

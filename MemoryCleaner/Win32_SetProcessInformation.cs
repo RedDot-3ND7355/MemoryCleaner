@@ -3,138 +3,106 @@ using System.Runtime.InteropServices;
 
 namespace MemoryCleaner
 {
-	// Token: 0x0200000F RID: 15
-	internal class Win32_SetProcessInformation
-	{
-		// Token: 0x0600007A RID: 122
-		[DllImport("kernel32.dll")]
-		public static extern int GetProcessInformation(IntPtr hProcess, Win32_SetProcessInformation.PROCESS_INFORMATION_CLASS ProcessInformationClass, IntPtr ProcessInformation, int ProcessInformationSize);
+    public class Win32_SetProcessInformation
+    {
+        public const int PROCESS_POWER_THROTTLING_CURRENT_VERSION = 1;
+        public const int PROCESS_POWER_THROTTLING_EXECUTION_SPEED = 1;
+        public const int PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION = 4;
 
-		// Token: 0x0600007B RID: 123
-		[DllImport("kernel32.dll")]
-		public static extern bool SetProcessInformation(IntPtr hProcess, Win32_SetProcessInformation.PROCESS_INFORMATION_CLASS ProcessInformationClass, IntPtr ProcessInformation, int ProcessInformationSize);
+        [DllImport("kernel32.dll")]
+        public static extern int GetProcessInformation(
+            IntPtr hProcess,
+            PROCESS_INFORMATION_CLASS ProcessInformationClass,
+            IntPtr ProcessInformation,
+            int ProcessInformationSize);
 
-		// Token: 0x0600007C RID: 124 RVA: 0x00003158 File Offset: 0x00001358
-		public static bool SetProcessInfo(IntPtr handle, Win32_SetProcessInformation.PROCESS_INFORMATION_CLASS piClass, object processInfo)
-		{
-			Type infoType = null;
-			if (piClass != Win32_SetProcessInformation.PROCESS_INFORMATION_CLASS.ProcessMemoryPriority)
-			{
-				if (piClass == Win32_SetProcessInformation.PROCESS_INFORMATION_CLASS.ProcessPowerThrottling)
-				{
-					infoType = typeof(Win32_SetProcessInformation.PROCESS_POWER_THROTTLING_STATE);
-				}
-			}
-			else
-			{
-				infoType = typeof(Win32_SetProcessInformation.MEMORY_PRIORITY_INFORMATION);
-			}
-			if (infoType != null)
-			{
-				int sizeOfProcessInfo = Marshal.SizeOf(infoType);
-				IntPtr pProcessInfo = Marshal.AllocHGlobal(sizeOfProcessInfo);
-				Marshal.StructureToPtr(processInfo, pProcessInfo, false);
-				bool flag = Win32_SetProcessInformation.SetProcessInformation(handle, piClass, pProcessInfo, sizeOfProcessInfo);
-				Marshal.FreeHGlobal(pProcessInfo);
-				return flag != Convert.ToBoolean(0);
-			}
-			return false;
-		}
+        [DllImport("kernel32.dll")]
+        public static extern bool SetProcessInformation(
+            IntPtr hProcess,
+            PROCESS_INFORMATION_CLASS ProcessInformationClass,
+            IntPtr ProcessInformation,
+            int ProcessInformationSize);
 
-		// Token: 0x0600007D RID: 125 RVA: 0x000031C4 File Offset: 0x000013C4
-		public static bool GetProcessInfo(IntPtr handle, Win32_SetProcessInformation.PROCESS_INFORMATION_CLASS piClass, out object processInfo)
-		{
-			Type infoType = null;
-			if (piClass != Win32_SetProcessInformation.PROCESS_INFORMATION_CLASS.ProcessMemoryPriority)
-			{
-				if (piClass == Win32_SetProcessInformation.PROCESS_INFORMATION_CLASS.ProcessPowerThrottling)
-				{
-					infoType = typeof(Win32_SetProcessInformation.PROCESS_POWER_THROTTLING_STATE);
-				}
-			}
-			else
-			{
-				infoType = typeof(Win32_SetProcessInformation.MEMORY_PRIORITY_INFORMATION);
-			}
-			if (infoType != null)
-			{
-				int sizeOfProcessInfo = Marshal.SizeOf(infoType);
-				IntPtr pProcessInfo = Marshal.AllocHGlobal(sizeOfProcessInfo);
-				int processInformation = Win32_SetProcessInformation.GetProcessInformation(handle, piClass, pProcessInfo, sizeOfProcessInfo);
-				processInfo = Marshal.PtrToStructure(pProcessInfo, infoType);
-				Marshal.FreeHGlobal(pProcessInfo);
-				return processInformation != 0;
-			}
-			processInfo = null;
-			return false;
-		}
+        public static bool SetProcessInfo(IntPtr handle, PROCESS_INFORMATION_CLASS piClass, object processInfo)
+        {
+            Type? infoType = GetInfoType(piClass);
+            if (infoType == null)
+                return false;
 
-		// Token: 0x0400003D RID: 61
-		public const int PROCESS_POWER_THROTTLING_CURRENT_VERSION = 1;
+            int size = Marshal.SizeOf(infoType);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            try
+            {
+                Marshal.StructureToPtr(processInfo, ptr, false);
+                return SetProcessInformation(handle, piClass, ptr, size);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+        }
 
-		// Token: 0x0400003E RID: 62
-		public const int PROCESS_POWER_THROTTLING_EXECUTION_SPEED = 1;
+        public static bool GetProcessInfo(IntPtr handle, PROCESS_INFORMATION_CLASS piClass, out object? processInfo)
+        {
+            Type? infoType = GetInfoType(piClass);
+            if (infoType == null)
+            {
+                processInfo = null;
+                return false;
+            }
 
-		// Token: 0x0400003F RID: 63
-		public const int PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION = 4;
+            int size = Marshal.SizeOf(infoType);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            try
+            {
+                int result = GetProcessInformation(handle, piClass, ptr, size);
+                processInfo = Marshal.PtrToStructure(ptr, infoType);
+                return result != 0;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+        }
 
-		// Token: 0x0200002C RID: 44
-		public enum PROCESS_INFORMATION_CLASS
-		{
-			// Token: 0x040000D4 RID: 212
-			ProcessMemoryPriority,
-			// Token: 0x040000D5 RID: 213
-			ProcessMemoryExhaustionInfo,
-			// Token: 0x040000D6 RID: 214
-			ProcessAppMemoryInfo,
-			// Token: 0x040000D7 RID: 215
-			ProcessInPrivateInfo,
-			// Token: 0x040000D8 RID: 216
-			ProcessPowerThrottling,
-			// Token: 0x040000D9 RID: 217
-			ProcessReservedValue1,
-			// Token: 0x040000DA RID: 218
-			ProcessTelemetryCoverageInfo,
-			// Token: 0x040000DB RID: 219
-			ProcessProtectionLevelInfo,
-			// Token: 0x040000DC RID: 220
-			ProcessLeapSecondInfo,
-			// Token: 0x040000DD RID: 221
-			ProcessMachineTypeInfo,
-			// Token: 0x040000DE RID: 222
-			ProcessInformationClassMax
-		}
+        private static Type? GetInfoType(PROCESS_INFORMATION_CLASS piClass) => piClass switch
+        {
+            PROCESS_INFORMATION_CLASS.ProcessMemoryPriority => typeof(MEMORY_PRIORITY_INFORMATION),
+            PROCESS_INFORMATION_CLASS.ProcessPowerThrottling => typeof(PROCESS_POWER_THROTTLING_STATE),
+            _ => null
+        };
 
-		// Token: 0x0200002D RID: 45
-		public struct PROCESS_POWER_THROTTLING_STATE
-		{
-			// Token: 0x06000107 RID: 263 RVA: 0x00004C4C File Offset: 0x00002E4C
-			public override string ToString()
-			{
-				return "PROCESS_POWER_THROTTLING_STATE:\n" + string.Format("\tVersion: {0}\n", this.Version) + string.Format("\tControlMask:{0}\n", this.ControlMask) + string.Format("\tStateMask:{0}\n", this.StateMask);
-			}
+        public enum PROCESS_INFORMATION_CLASS
+        {
+            ProcessMemoryPriority,
+            ProcessMemoryExhaustionInfo,
+            ProcessAppMemoryInfo,
+            ProcessInPrivateInfo,
+            ProcessPowerThrottling,
+            ProcessReservedValue1,
+            ProcessTelemetryCoverageInfo,
+            ProcessProtectionLevelInfo,
+            ProcessLeapSecondInfo,
+            ProcessMachineTypeInfo,
+            ProcessInformationClassMax
+        }
 
-			// Token: 0x040000DF RID: 223
-			public uint Version;
+        public struct PROCESS_POWER_THROTTLING_STATE
+        {
+            public uint Version;
+            public uint ControlMask;
+            public uint StateMask;
 
-			// Token: 0x040000E0 RID: 224
-			public uint ControlMask;
+            public override string ToString() =>
+                $"PROCESS_POWER_THROTTLING_STATE:\n\tVersion: {Version}\n\tControlMask:{ControlMask}\n\tStateMask:{StateMask}\n";
+        }
 
-			// Token: 0x040000E1 RID: 225
-			public uint StateMask;
-		}
+        public struct MEMORY_PRIORITY_INFORMATION
+        {
+            public uint MemoryPriority;
 
-		// Token: 0x0200002E RID: 46
-		public struct MEMORY_PRIORITY_INFORMATION
-		{
-			// Token: 0x06000108 RID: 264 RVA: 0x00004CA2 File Offset: 0x00002EA2
-			public override string ToString()
-			{
-				return "MEMORY_PRIORITY_INFORMATION:\n" + string.Format("\tMemoryPriority: {0}\n", this.MemoryPriority);
-			}
-
-			// Token: 0x040000E2 RID: 226
-			public uint MemoryPriority;
-		}
-	}
+            public override string ToString() =>
+                $"MEMORY_PRIORITY_INFORMATION:\n\tMemoryPriority: {MemoryPriority}\n";
+        }
+    }
 }

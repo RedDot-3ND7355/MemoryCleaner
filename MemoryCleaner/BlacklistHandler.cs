@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -8,49 +9,71 @@ namespace MemoryCleaner
 {
     public static class BlacklistHandler
     {
-        // Blacklist Globals
-        private static string default_path = Path.GetDirectoryName(Application.ExecutablePath) + "\\Blacklist.xml";
-        public static List<string> blacklisted_processes = new List<string>();
+        private static readonly string default_path =
+            Path.Combine(Path.GetDirectoryName(Application.ExecutablePath) ?? AppContext.BaseDirectory, "Blacklist.xml");
 
-        // Initialize Blacklist
+        /// <summary>Case-insensitive process file names, e.g. chrome.exe</summary>
+        public static HashSet<string> blacklisted_processes { get; private set; } =
+            new(StringComparer.OrdinalIgnoreCase);
+
+        public static bool IsBlacklisted(string processFileName) =>
+            !string.IsNullOrWhiteSpace(processFileName) &&
+            blacklisted_processes.Contains(processFileName);
+
         public static void IniBL()
         {
-            // Check & Create if needed
             if (!File.Exists(default_path))
                 new XDocument(new XElement("Processes")).Save(default_path);
-            // Load Blacklist
+
             LoadBL();
         }
 
-        // Save Blacklist
         public static void SaveBL()
         {
-            // Save Added Processes
-            XDocument doc = new XDocument(new XElement("Processes"));
-            XElement parentnode = doc.Element("Processes");
-            foreach (string child_elements in blacklisted_processes)
-                // Check before adding
-                if (parentnode.Elements("Process").Where(x => x.Value == child_elements).Count() == 0)
-                    // Add it
-                    parentnode.Add(new XElement("Process", child_elements));
-            // Replace Element
-            doc.Element("Processes").ReplaceWith(parentnode);
-            // Append to file
+            var doc = new XDocument(new XElement("Processes"));
+            XElement parent = doc.Element("Processes")!;
+
+            foreach (string name in blacklisted_processes.OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                    continue;
+
+                string normalized = name.Trim();
+                if (!parent.Elements("Process").Any(x =>
+                        string.Equals(x.Value, normalized, StringComparison.OrdinalIgnoreCase)))
+                {
+                    parent.Add(new XElement("Process", normalized));
+                }
+            }
+
             doc.Save(default_path);
-            // Reload Blacklist
             LoadBL();
         }
 
-        // Load Blacklist
         private static void LoadBL()
         {
-            // Load Processes into local list
-            blacklisted_processes = new List<string>();
-            XDocument doc = XDocument.Load(default_path);
-            XElement parentnode = doc.Element("Processes");
-            foreach (var ele in parentnode.Elements("Process").ToArray())
-                blacklisted_processes.Add(ele.Value);
-        }
+            var loaded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+            try
+            {
+                XDocument doc = XDocument.Load(default_path);
+                XElement? parent = doc.Element("Processes");
+                if (parent != null)
+                {
+                    foreach (XElement ele in parent.Elements("Process"))
+                    {
+                        string value = ele.Value?.Trim() ?? string.Empty;
+                        if (!string.IsNullOrWhiteSpace(value))
+                            loaded.Add(value);
+                    }
+                }
+            }
+            catch
+            {
+                // Keep empty set on corrupt file
+            }
+
+            blacklisted_processes = loaded;
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace MemoryCleaner
+﻿using ReaLTaiizor;
+
+namespace MemoryCleaner
 {
     partial class BlackListGUI
     {
@@ -29,28 +31,28 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BlackListGUI));
-            this.materialButton1 = new MaterialSkin.Controls.MaterialButton();
-            this.materialButton2 = new MaterialSkin.Controls.MaterialButton();
-            this.materialListBox1 = new MaterialSkin.Controls.MaterialListBox();
+            this.materialButton1 = new ReaLTaiizor.Controls.MaterialButton();
+            this.materialButton2 = new ReaLTaiizor.Controls.MaterialButton();
+            this.materialListBox1 = new ReaLTaiizor.Controls.MaterialListBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.SuspendLayout();
             // 
             // materialButton1
             // 
             this.materialButton1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.materialButton1.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
+            this.materialButton1.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
             this.materialButton1.Depth = 0;
             this.materialButton1.HighEmphasis = true;
-            this.materialButton1.Icon = null;
+            //this.materialButton1.Icon = null;
             this.materialButton1.Location = new System.Drawing.Point(7, 70);
             this.materialButton1.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
-            this.materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialButton1.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             this.materialButton1.Name = "materialButton1";
             this.materialButton1.NoAccentTextColor = System.Drawing.Color.Empty;
             this.materialButton1.Size = new System.Drawing.Size(119, 36);
             this.materialButton1.TabIndex = 0;
             this.materialButton1.Text = "Add Process";
-            this.materialButton1.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
+            this.materialButton1.Type = ReaLTaiizor.Controls.MaterialButton.MaterialButtonType.Contained;
             this.materialButton1.UseAccentColor = false;
             this.materialButton1.UseVisualStyleBackColor = true;
             this.materialButton1.Click += new System.EventHandler(this.materialButton1_Click);
@@ -58,19 +60,19 @@
             // materialButton2
             // 
             this.materialButton2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.materialButton2.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
+            this.materialButton2.Density = ReaLTaiizor.Controls.MaterialButton.MaterialButtonDensity.Default;
             this.materialButton2.Depth = 0;
             this.materialButton2.HighEmphasis = true;
-            this.materialButton2.Icon = null;
+            //this.materialButton2.Icon = null;
             this.materialButton2.Location = new System.Drawing.Point(134, 70);
             this.materialButton2.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
-            this.materialButton2.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialButton2.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             this.materialButton2.Name = "materialButton2";
             this.materialButton2.NoAccentTextColor = System.Drawing.Color.Empty;
             this.materialButton2.Size = new System.Drawing.Size(148, 36);
             this.materialButton2.TabIndex = 1;
             this.materialButton2.Text = "Remove Process";
-            this.materialButton2.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
+            this.materialButton2.Type = ReaLTaiizor.Controls.MaterialButton.MaterialButtonType.Contained;
             this.materialButton2.UseAccentColor = false;
             this.materialButton2.UseVisualStyleBackColor = true;
             this.materialButton2.Click += new System.EventHandler(this.materialButton2_Click);
@@ -82,7 +84,7 @@
             this.materialListBox1.Depth = 0;
             this.materialListBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel);
             this.materialListBox1.Location = new System.Drawing.Point(7, 115);
-            this.materialListBox1.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialListBox1.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
             this.materialListBox1.MultiSelect = true;
             this.materialListBox1.Name = "materialListBox1";
             this.materialListBox1.SelectedIndex = -1;
@@ -118,9 +120,9 @@
 
         #endregion
 
-        private MaterialSkin.Controls.MaterialButton materialButton1;
-        private MaterialSkin.Controls.MaterialButton materialButton2;
-        private MaterialSkin.Controls.MaterialListBox materialListBox1;
+        private ReaLTaiizor.Controls.MaterialButton materialButton1;
+        private ReaLTaiizor.Controls.MaterialButton materialButton2;
+        private ReaLTaiizor.Controls.MaterialListBox materialListBox1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }

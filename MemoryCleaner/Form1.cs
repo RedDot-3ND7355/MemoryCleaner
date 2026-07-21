@@ -1,5 +1,6 @@
 ﻿using IWshRuntimeLibrary;
-using MaterialSkin;
+using ReaLTaiizor.Forms;
+using ReaLTaiizor.Manager;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -10,7 +11,7 @@ using System.Windows.Forms;
 
 namespace MemoryCleaner
 {
-    public partial class Form1 : MaterialSkin.Controls.MaterialForm
+    public partial class Form1 : MaterialForm
     {
         // Globals
         public readonly MaterialSkinManager materialSkinManager;
@@ -53,15 +54,15 @@ namespace MemoryCleaner
         // Check Start as Minimized added for folks that wants to save 1 second of their time XD
         private void CheckForStartAsMinimized()
         {
-            if (materialCheckbox4.Checked)
+            if (!materialCheckbox4.Checked)
+                return;
+
+            notifyIcon1.Visible = true;
+            _ = Task.Delay(50).ContinueWith(_ =>
             {
-                notifyIcon1.Visible = true;
-                Task.Delay(50).ContinueWith(delegate
-                {
-                    CheckForIllegalCrossThreadCalls = false;
-                    this.Hide();
-                });
-            }
+                if (!IsDisposed)
+                    BeginInvoke(Hide);
+            });
         }
 
         // Check Perms
@@ -80,12 +81,9 @@ namespace MemoryCleaner
         }
 
         // Manual Clean Button
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
-            CheckForIllegalCrossThreadCalls = false;
-            // Start a thread that calls a parameterized instance method.
-            Thread thread1 = new Thread(new ThreadStart(StartClean));
-            thread1.Start();
+            await StartCleanAsync();
         }
 
         // Set Interval
@@ -112,17 +110,18 @@ namespace MemoryCleaner
         }
 
         // Cleaner Interval
-        private void CleanerTimer_Tick(object sender, EventArgs e)
+        private async void CleanerTimer_Tick(object sender, EventArgs e)
         {
-            CheckForIllegalCrossThreadCalls = false;
-            // Start a thread that calls a parameterized instance method.
-            Thread thread1 = new Thread(new ThreadStart(StartClean));
-            thread1.Start();
+            await StartCleanAsync();
         }
 
+        // Start MemClean Routine (old/unused)
+        //private void StartClean() =>
+        //    MemoryCleaner.CleanMem(materialCheckbox2.Checked, materialCheckbox3.Checked);
+
         // Start MemClean Routine
-        private void StartClean() =>
-            MemoryCleaner.CleanMem(materialCheckbox2.Checked, materialCheckbox3.Checked);
+        private Task StartCleanAsync() =>
+            MemoryCleaner.CleanMemAsync(materialCheckbox2.Checked, materialCheckbox3.Checked);
 
         // Start with Windows
         private void materialCheckbox1_CheckedChanged(object sender, EventArgs e)
@@ -164,15 +163,29 @@ namespace MemoryCleaner
         // Reset Log Text
         public void ResetLauncherLog()
         {
+            if (IsDisposed) return;
+
+            if (InvokeRequired)
+            {
+                BeginInvoke(ResetLauncherLog);
+                return;
+            }
+
             materialMultiLineTextBox21.Text = "Start of log";
         }
 
         // Add Logs to Form
         public void AddLauncherLog(string log)
         {
-            // Proceed
-            materialMultiLineTextBox21.Text += Environment.NewLine + log;
+            if (IsDisposed) return;
 
+            if (InvokeRequired)
+            {
+                BeginInvoke(() => AddLauncherLog(log));
+                return;
+            }
+
+            materialMultiLineTextBox21.Text += Environment.NewLine + log;
         }
 
         // Show Processes in logs
@@ -202,7 +215,7 @@ namespace MemoryCleaner
 
         // About
         private void materialButton3_Click(object sender, EventArgs e) =>
-            MaterialSkin.Controls.MaterialMessageBox.Show($"Made by Endless (Kogaruh){Environment.NewLine}Version: {appver}{Environment.NewLine}Run as admin for best results!");
+            ReaLTaiizor.Controls.MaterialMessageBox.Show($"Made by Endless (Kogaruh){Environment.NewLine}Version: {appver}{Environment.NewLine}Run as admin for best results!");
 
         // Toggle Standby Cache Memory Clear (with admin check)
         private void materialCheckbox3_CheckedChanged(object sender, EventArgs e)
@@ -241,7 +254,8 @@ namespace MemoryCleaner
                     Process.GetCurrentProcess().Kill();
                 else
                     materialCheckbox3.Checked = false;
-            } catch { materialCheckbox3.Checked = false; }
+            }
+            catch { materialCheckbox3.Checked = false; }
         }
 
         // Save start as minimized
@@ -251,7 +265,7 @@ namespace MemoryCleaner
                 // Save Setting
                 SettingsHandler.SaveSettings();
         }
-        
+
         // Show Blacklist GUI
         private void materialButton4_Click(object sender, EventArgs e)
         {

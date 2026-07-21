@@ -1,144 +1,160 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Windows.Forms;
-using Microsoft.Win32;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MemoryCleaner
 {
     public class _MemoryCleaner
     {
-        RAMcs RAMcs = new RAMcs();
-        private void wait(int milliseconds)
-        {
-            Timer timer_wait = new Timer();
-            if (milliseconds == 0 || milliseconds < 0) return;
-            timer_wait.Interval = milliseconds;
-            timer_wait.Enabled = true;
-            timer_wait.Start();
-            timer_wait.Tick += (s, e) =>
-            {
-                timer_wait.Enabled = false;
-                timer_wait.Stop();
-            };
-            while (timer_wait.Enabled)
-            {
-                Application.DoEvents();
-            }
-        }
+        private readonly RAMcs _ram = new();
+        private readonly SemaphoreSlim _cleanLock = new(1, 1);
 
-        // Check if ran as admin
+        [DllImport("psapi.dll")]
+        private static extern bool EmptyWorkingSet(IntPtr hProcess);
+
         private static bool IsAdministrator()
         {
-            var identity = WindowsIdentity.GetCurrent();
-            var principal = new WindowsPrincipal(identity);
-            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            using var identity = WindowsIdentity.GetCurrent();
+            return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
         }
 
+        /// <summary>
+        /// Trims process working sets and optionally purges the standby list.
+        /// Safe to call from a background thread; UI logging is marshalled by Form1.
+        /// </summary>
         public void CleanMem(bool advanced = false, bool cached = true)
         {
+            // Ignore overlapping manual/timer cleans
+            if (!_cleanLock.Wait(0))
+            {
+                Form1.CurrentForm?.AddLauncherLog("Clean already running — skipped.");
+                return;
+            }
+
             try
             {
-                // Make process list with opened Applications (TESTING PURPOSES)
-                // var processes = Process.GetProcesses().Where(p => p.MainWindowHandle != IntPtr.Zero).ToArray();
+                Form1.CurrentForm?.ResetLauncherLog();
+                Form1.CurrentForm?.AddLauncherLog("Starting memory clean...");
 
-                // Make process list with all Processes
-                var processes = Process.GetProcesses();
-                Form1.CurrentForm.ResetLauncherLog();
-                int toclean_count = processes.Count();
-                if (processes.Count() > 0)
+                float beforePercent = _ram.GetUsagePercent();
+                ulong beforeAvailable = _ram.GetAvailableBytes();
+
+                Form1.CurrentForm?.AddLauncherLog(
+                    $"Before: {beforePercent:F2}% used ({FormatBytes(beforeAvailable)} free)");
+
+                Process[] processes = Process.GetProcesses();
+                int cleaned = 0;
+                int ignoredBlacklist = 0;
+                int ignoredSystem = 0;
+
+                foreach (Process process in processes)
                 {
-                    Form1.CurrentForm.AddLauncherLog($"Cleaning [{toclean_count + " Process's"}] Memory...");
-                    if (RAMcs.IsCounters)
+                    using (process)
                     {
-                        var curr_ram = new RAMcs().Current_Usage();
-                        var rounded_curr = Math.Round((Decimal)curr_ram, 2, MidpointRounding.AwayFromZero);
-                        Form1.CurrentForm.AddLauncherLog("Before: " + rounded_curr + "%");
-                    }
-                    else
-                    {
-                        var curr_ram = new RAMcs().No_Counters_Curr_Usage();
-                        var rounded_curr = Math.Round((Decimal)curr_ram, 2, MidpointRounding.AwayFromZero);
-                        Form1.CurrentForm.AddLauncherLog("Before: " + rounded_curr + "%");
-                    }
-                    using (var Dispo = new DispoData())
-                    {
-                        foreach (Process prs_ss in processes)
+                        string processFileName = process.ProcessName + ".exe";
+
+                        if (BlacklistHandler.IsBlacklisted(processFileName))
                         {
-                            // Blacklist
-                            if (prs_ss != null && BlacklistHandler.blacklisted_processes.Contains(prs_ss.ProcessName + ".exe"))
-                            {
-                                Form1.CurrentForm.AddLauncherLog("Ignored Blacklisted Process: " + prs_ss.ProcessName);
-                                continue;
-                            }
+                            ignoredBlacklist++;
                             if (advanced)
-                                Form1.CurrentForm.AddLauncherLog("Cleaning: " + prs_ss.ProcessName);
-                            if (prs_ss != null)
-                                try
-                                {
-                                    prs_ss.MinWorkingSet = (IntPtr)(300000);
-                                }
-                                catch
-                                {
-                                    if (advanced)
-                                        Form1.CurrentForm.AddLauncherLog("Ignored System Process: " + prs_ss.ProcessName);
-                                    toclean_count--;
-                                }
+                                Form1.CurrentForm?.AddLauncherLog("Ignored blacklisted: " + process.ProcessName);
+                            continue;
                         }
-                        GCSettings.LatencyMode = GCLatencyMode.Interactive;
-                        GC.Collect();
-                        GC.Collect(1, GCCollectionMode.Forced, blocking: false);
-                        GC.Collect(2, GCCollectionMode.Forced, blocking: false);
-                        GC.Collect(3, GCCollectionMode.Forced, blocking: false);
-                        GC.WaitForPendingFinalizers();
-                        // Standby Cleaner
+
                         try
                         {
-                            if (cached && IsAdministrator())
+                            if (EmptyWorkingSet(process.Handle))
                             {
-                                Form1.CurrentForm.AddLauncherLog("Clearing Standby Cache...");
-                                new Win32_NtSetSystemInformation().ClearStandbyCache();
-                                Form1.CurrentForm.AddLauncherLog("Cleared Standby Cache");
+                                cleaned++;
+                                if (advanced)
+                                    Form1.CurrentForm?.AddLauncherLog("Cleaned: " + process.ProcessName);
                             }
-                            else if (cached && !IsAdministrator())
+                            else
                             {
-                                Form1.CurrentForm.AddLauncherLog("Clearing Standby Cache requires admin.");
+                                ignoredSystem++;
+                                if (advanced)
+                                    Form1.CurrentForm?.AddLauncherLog("Skipped (access denied): " + process.ProcessName);
                             }
-                        } 
-                        catch 
+                        }
+                        catch
                         {
-                            Form1.CurrentForm.AddLauncherLog("Failed to clear Standby Cache.");
+                            // System/protected/exited processes
+                            ignoredSystem++;
+                            if (advanced)
+                                Form1.CurrentForm?.AddLauncherLog("Ignored system process: " + process.ProcessName);
                         }
                     }
-                    wait(2500);
-                    if (RAMcs.IsCounters)
+                }
+
+                // Light GC for this app only — not a system RAM cleaner
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, blocking: false);
+                GC.WaitForPendingFinalizers();
+
+                // Standby list purge (requires admin + SeProfileSingleProcessPrivilege)
+                if (cached)
+                {
+                    if (IsAdministrator())
                     {
-                        var af_ram = new RAMcs().Current_Usage();
-                        var rounded_af = Math.Round((Decimal)af_ram, 2, MidpointRounding.AwayFromZero);
-                        Form1.CurrentForm.AddLauncherLog("After: " + rounded_af + "%");
+                        try
+                        {
+                            Form1.CurrentForm?.AddLauncherLog("Clearing standby cache...");
+                            Win32_NtSetSystemInformation.ClearStandbyCache();
+                            Form1.CurrentForm?.AddLauncherLog("Standby cache cleared.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Form1.CurrentForm?.AddLauncherLog("Failed to clear standby cache: " + ex.Message);
+                        }
                     }
                     else
                     {
-                        var af_ram = new RAMcs().No_Counters_Curr_Usage();
-                        var rounded_af = Math.Round((Decimal)af_ram, 2, MidpointRounding.AwayFromZero);
-                        Form1.CurrentForm.AddLauncherLog("After: " + rounded_af + "%");
+                        Form1.CurrentForm?.AddLauncherLog("Standby cache clear requires admin.");
                     }
-                    Form1.CurrentForm.AddLauncherLog($"Memory [{toclean_count + " Process's"}] Cleaned");
                 }
+
+                // Give the OS a moment to update memory counters
+                Thread.Sleep(1500);
+
+                float afterPercent = _ram.GetUsagePercent();
+                ulong afterAvailable = _ram.GetAvailableBytes();
+                long freed = (long)afterAvailable - (long)beforeAvailable;
+
+                Form1.CurrentForm?.AddLauncherLog(
+                    $"After:  {afterPercent:F2}% used ({FormatBytes(afterAvailable)} free)");
+                Form1.CurrentForm?.AddLauncherLog(
+                    freed >= 0
+                        ? $"Approx. freed: {FormatBytes((ulong)freed)} ({beforePercent - afterPercent:F2}%)"
+                        : $"Approx. change: {FormatBytes((ulong)Math.Abs(freed))} more in use ({beforePercent - afterPercent:F2}%)");
+                Form1.CurrentForm?.AddLauncherLog(
+                    $"Done — cleaned: {cleaned}, blacklisted: {ignoredBlacklist}, skipped: {ignoredSystem}");
             }
-            catch
+            catch (Exception ex)
             {
-                Form1.CurrentForm.AddLauncherLog("[Error] Failed Cleaning Memory!");
+                Form1.CurrentForm?.AddLauncherLog("[Error] Failed cleaning memory: " + ex.Message);
+            }
+            finally
+            {
+                _cleanLock.Release();
             }
         }
 
-        // Dispose
-        class DispoData : IDisposable
-        {
-            public void Dispose() { }
-        }
+        /// <summary>Async wrapper for UI callers.</summary>
+        public Task CleanMemAsync(bool advanced = false, bool cached = true) =>
+            Task.Run(() => CleanMem(advanced, cached));
 
+        private static string FormatBytes(ulong bytes)
+        {
+            const double KB = 1024;
+            const double MB = KB * 1024;
+            const double GB = MB * 1024;
+
+            if (bytes >= GB) return $"{bytes / GB:F2} GB";
+            if (bytes >= MB) return $"{bytes / MB:F2} MB";
+            if (bytes >= KB) return $"{bytes / KB:F2} KB";
+            return $"{bytes} B";
+        }
     }
 }
