@@ -8,7 +8,10 @@
     <Compile Update="BlackListGUI.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Form1.cs">
+    <Compile Update="CircularRAMProgress.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="NewDesign.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="RamOverlayForm.cs">

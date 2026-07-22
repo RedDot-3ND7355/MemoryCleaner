@@ -10,6 +10,13 @@
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	<LangVersion>latest</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Form1.cs" />
+    <Compile Remove="Form1.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Form1.resx" />
+  </ItemGroup>
 
   <ItemGroup>
 	<PackageReference Include="ReaLTaiizor" Version="3.8.2.1" />

@@ -30,19 +30,19 @@ namespace MemoryCleaner
             // Ignore overlapping manual/timer cleans
             if (!_cleanLock.Wait(0))
             {
-                Form1.CurrentForm?.AddLauncherLog("Clean already running — skipped.");
+                NewDesign.CurrentForm?.AddLauncherLog("Clean already running — skipped.");
                 return;
             }
 
             try
             {
-                Form1.CurrentForm?.ResetLauncherLog();
-                Form1.CurrentForm?.AddLauncherLog("Starting memory clean...");
+                NewDesign.CurrentForm?.ResetLauncherLog();
+                NewDesign.CurrentForm?.AddLauncherLog("Starting memory clean...");
 
                 float beforePercent = _ram.GetUsagePercent();
                 ulong beforeAvailable = _ram.GetAvailableBytes();
 
-                Form1.CurrentForm?.AddLauncherLog(
+                NewDesign.CurrentForm?.AddLauncherLog(
                     $"Before: {beforePercent:F2}% used ({FormatBytes(beforeAvailable)} free)");
 
                 Process[] processes = Process.GetProcesses();
@@ -60,7 +60,7 @@ namespace MemoryCleaner
                         {
                             ignoredBlacklist++;
                             if (advanced)
-                                Form1.CurrentForm?.AddLauncherLog("Ignored blacklisted: " + process.ProcessName);
+                                NewDesign.CurrentForm?.AddLauncherLog("Ignored blacklisted: " + process.ProcessName);
                             continue;
                         }
 
@@ -70,13 +70,13 @@ namespace MemoryCleaner
                             {
                                 cleaned++;
                                 if (advanced)
-                                    Form1.CurrentForm?.AddLauncherLog("Cleaned: " + process.ProcessName);
+                                    NewDesign.CurrentForm?.AddLauncherLog("Cleaned: " + process.ProcessName);
                             }
                             else
                             {
                                 ignoredSystem++;
                                 if (advanced)
-                                    Form1.CurrentForm?.AddLauncherLog("Skipped (access denied): " + process.ProcessName);
+                                    NewDesign.CurrentForm?.AddLauncherLog("Skipped (access denied): " + process.ProcessName);
                             }
                         }
                         catch
@@ -84,7 +84,7 @@ namespace MemoryCleaner
                             // System/protected/exited processes
                             ignoredSystem++;
                             if (advanced)
-                                Form1.CurrentForm?.AddLauncherLog("Ignored system process: " + process.ProcessName);
+                                NewDesign.CurrentForm?.AddLauncherLog("Ignored system process: " + process.ProcessName);
                         }
                     }
                 }
@@ -100,18 +100,18 @@ namespace MemoryCleaner
                     {
                         try
                         {
-                            Form1.CurrentForm?.AddLauncherLog("Clearing standby cache...");
+                            NewDesign.CurrentForm?.AddLauncherLog("Clearing standby cache...");
                             Win32_NtSetSystemInformation.ClearStandbyCache();
-                            Form1.CurrentForm?.AddLauncherLog("Standby cache cleared.");
+                            NewDesign.CurrentForm?.AddLauncherLog("Standby cache cleared.");
                         }
                         catch (Exception ex)
                         {
-                            Form1.CurrentForm?.AddLauncherLog("Failed to clear standby cache: " + ex.Message);
+                            NewDesign.CurrentForm?.AddLauncherLog("Failed to clear standby cache: " + ex.Message);
                         }
                     }
                     else
                     {
-                        Form1.CurrentForm?.AddLauncherLog("Standby cache clear requires admin.");
+                        NewDesign.CurrentForm?.AddLauncherLog("Standby cache clear requires admin.");
                     }
                 }
 
@@ -122,18 +122,18 @@ namespace MemoryCleaner
                 ulong afterAvailable = _ram.GetAvailableBytes();
                 long freed = (long)afterAvailable - (long)beforeAvailable;
 
-                Form1.CurrentForm?.AddLauncherLog(
+                NewDesign.CurrentForm?.AddLauncherLog(
                     $"After:  {afterPercent:F2}% used ({FormatBytes(afterAvailable)} free)");
-                Form1.CurrentForm?.AddLauncherLog(
+                NewDesign.CurrentForm?.AddLauncherLog(
                     freed >= 0
                         ? $"Approx. freed: {FormatBytes((ulong)freed)} ({beforePercent - afterPercent:F2}%)"
                         : $"Approx. change: {FormatBytes((ulong)Math.Abs(freed))} more in use ({beforePercent - afterPercent:F2}%)");
-                Form1.CurrentForm?.AddLauncherLog(
+                NewDesign.CurrentForm?.AddLauncherLog(
                     $"Done — cleaned: {cleaned}, blacklisted: {ignoredBlacklist}, skipped: {ignoredSystem}");
             }
             catch (Exception ex)
             {
-                Form1.CurrentForm?.AddLauncherLog("[Error] Failed cleaning memory: " + ex.Message);
+                NewDesign.CurrentForm?.AddLauncherLog("[Error] Failed cleaning memory: " + ex.Message);
             }
             finally
             {

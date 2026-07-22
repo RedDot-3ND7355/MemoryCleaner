@@ -20,5 +20,6 @@ Features:
 - Tray context menu (Clean now / Open / RAM Overlay Toggle / Overlay Position / Exit)
 - Always on tray icon
 - RAM overlay with corner positions
+- Real-time RAM usage display with colored circular indicator
 
 > ⚠️ **Important:** Blacklist games and other latency-sensitive apps so cleaning doesn’t cause hitches/stutters.

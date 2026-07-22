@@ -78,16 +78,15 @@ namespace MemoryCleaner
         // Save Settings
         public static void SaveSettings()
         {
-            if (Form1.CurrentForm == null)
-                return;
+            if (NewDesign.CurrentForm == null) return;
 
             Current = new AppSettings
             {
-                Interval = Form1.CurrentForm.materialComboBox1.SelectedItem?.ToString() ?? "OFF",
-                Startup = Form1.CurrentForm.materialCheckbox1.Checked,
-                Advanced = Form1.CurrentForm.materialCheckbox2.Checked,
-                Cached = Form1.CurrentForm.materialCheckbox3.Checked,
-                StartMinimized = Form1.CurrentForm.materialCheckbox4.Checked,
+                Interval = NewDesign.CurrentForm.intervalComboBox.SelectedItem?.ToString() ?? "OFF",
+                Startup = NewDesign.CurrentForm.startonbootCheckBox.Checked,
+                Advanced = NewDesign.CurrentForm.advancedlogsCheckBox.Checked,
+                Cached = NewDesign.CurrentForm.clearstandbymemCheckBox.Checked,
+                StartMinimized = NewDesign.CurrentForm.startminimizedCheckBox.Checked,
                 // keep overlay values already on Current (saved from tray)
                 OverlayEnabled = Current.OverlayEnabled,
                 OverlayPosition = Current.OverlayPosition
@@ -99,21 +98,22 @@ namespace MemoryCleaner
         // Read Settings
         public static void ReadSettings()
         {
-            if (Form1.CurrentForm == null)
-                return;
+            if (NewDesign.CurrentForm == null) return;
 
             Current = ReadJsonOrDefault();
 
             // Apply to UI (SelectedItem only updates when the value exists in the combo box)
-            if (Form1.CurrentForm.materialComboBox1.Items.Contains(Current.Interval))
-                Form1.CurrentForm.materialComboBox1.SelectedItem = Current.Interval;
-            else
-                Form1.CurrentForm.materialComboBox1.SelectedItem = "OFF";
+            var form = NewDesign.CurrentForm;
 
-            Form1.CurrentForm.materialCheckbox1.Checked = Current.Startup;
-            Form1.CurrentForm.materialCheckbox2.Checked = Current.Advanced;
-            Form1.CurrentForm.materialCheckbox3.Checked = Current.Cached;
-            Form1.CurrentForm.materialCheckbox4.Checked = Current.StartMinimized;
+            if (form.intervalComboBox.Items.Contains(Current.Interval))
+                form.intervalComboBox.SelectedItem = Current.Interval;
+            else
+                form.intervalComboBox.SelectedItem = "OFF";
+
+            form.startonbootCheckBox.Checked = Current.Startup;
+            form.advancedlogsCheckBox.Checked = Current.Advanced;
+            form.clearstandbymemCheckBox.Checked = Current.Cached;
+            form.startminimizedCheckBox.Checked = Current.StartMinimized;
         }
 
         private static AppSettings ReadJsonOrDefault()
