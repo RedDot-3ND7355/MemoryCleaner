@@ -23,3 +23,6 @@ Features:
 - Real-time RAM usage display with colored circular indicator
 
 > ⚠️ **Important:** Blacklist games and other latency-sensitive apps so cleaning doesn’t cause hitches/stutters.
+
+> Prewview
+<img width="360" height="614" alt="image" src="https://github.com/user-attachments/assets/7db9ae11-bc8b-42c1-8b1f-5f1bc78cc37e" />
