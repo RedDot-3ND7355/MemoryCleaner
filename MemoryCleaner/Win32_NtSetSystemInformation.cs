@@ -6,38 +6,32 @@ namespace MemoryCleaner
 {
     public sealed class Win32_NtSetSystemInformation
     {
-        private const int SystemMemoryListInformation = 80;
-        private const int MemoryPurgeStandbyList = 4;
-
         [DllImport("ntdll.dll")]
         private static extern uint NtSetSystemInformation(int infoClass, IntPtr info, int length);
 
         public static void ClearStandbyCache()
         {
             if (!Win32_PrivilegeElevation.SetIncreasePrivileges("SeProfileSingleProcessPrivilege"))
-                throw new InvalidOperationException("Could not enable SeProfileSingleProcessPrivilege.");
+                return;
 
-            int command = MemoryPurgeStandbyList;
-            GCHandle gcHandle = GCHandle.Alloc(command, GCHandleType.Pinned);
             try
             {
-                uint status = NtSetSystemInformation(
-                    SystemMemoryListInformation,
-                    gcHandle.AddrOfPinnedObject(),
-                    sizeof(int));
-
-                if (status != 0U)
+                int command = 4;
+                GCHandle gcHandle = GCHandle.Alloc(command, GCHandleType.Pinned);
+                try
                 {
-                    throw new Win32Exception(
-                        Marshal.GetLastWin32Error(),
-                        $"NtSetSystemInformation failed (NTSTATUS=0x{status:X8}).");
+                    uint status = NtSetSystemInformation(
+                        80,
+                        gcHandle.AddrOfPinnedObject(),
+                        sizeof(int));
+                }
+                finally
+                {
+                    if (gcHandle.IsAllocated)
+                        gcHandle.Free();
                 }
             }
-            finally
-            {
-                if (gcHandle.IsAllocated)
-                    gcHandle.Free();
-            }
+            catch { }
         }
     }
 }

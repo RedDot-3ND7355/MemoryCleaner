@@ -3,6 +3,7 @@ using ReaLTaiizor.Forms;
 using ReaLTaiizor.Manager;
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Security.Principal;

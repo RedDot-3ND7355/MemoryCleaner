@@ -178,7 +178,7 @@ namespace MemoryCleaner
             clearstandbymemCheckBox.Checked = true;
             clearstandbymemCheckBox.CheckState = CheckState.Checked;
             clearstandbymemCheckBox.Depth = 0;
-            clearstandbymemCheckBox.Location = new System.Drawing.Point(158, 291);
+            clearstandbymemCheckBox.Location = new System.Drawing.Point(159, 291);
             clearstandbymemCheckBox.Margin = new Padding(0);
             clearstandbymemCheckBox.MouseLocation = new System.Drawing.Point(-1, -1);
             clearstandbymemCheckBox.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
@@ -371,6 +371,8 @@ namespace MemoryCleaner
             // 
             // NewDesign
             // 
+            AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new System.Drawing.Size(362, 616);
             Controls.Add(materialLabel4);
             Controls.Add(aboutButton);
