@@ -89,7 +89,9 @@ namespace MemoryCleaner
                 StartMinimized = NewDesign.CurrentForm.startminimizedCheckBox.Checked,
                 // keep overlay values already on Current (saved from tray)
                 OverlayEnabled = Current.OverlayEnabled,
-                OverlayPosition = Current.OverlayPosition
+                OverlayPosition = Current.OverlayPosition,
+                // Keep Check for Updates on Startup on Current (saved from tray)
+                CheckForUpdatesOnStartup = Current.CheckForUpdatesOnStartup
             };
 
             WriteJson(Current);
@@ -174,6 +176,7 @@ namespace MemoryCleaner
             public bool StartMinimized { get; set; } = false;
             public bool OverlayEnabled { get; set; } = false;
             public string OverlayPosition { get; set; } = "TopRight";
+            public bool CheckForUpdatesOnStartup { get; set; } = true;
         }
 
         private static bool TryGetValue(string line, string prefix, out string value)

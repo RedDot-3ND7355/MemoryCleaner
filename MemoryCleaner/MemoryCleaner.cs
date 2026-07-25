@@ -37,13 +37,14 @@ namespace MemoryCleaner
             try
             {
                 NewDesign.CurrentForm?.ResetLauncherLog();
-                NewDesign.CurrentForm?.AddLauncherLog("Starting memory clean...");
+                NewDesign.CurrentForm?.AddSection("Starting memory clean...");
 
                 float beforePercent = _ram.GetUsagePercent();
                 ulong beforeAvailable = _ram.GetAvailableBytes();
 
                 NewDesign.CurrentForm?.AddLauncherLog(
                     $"Before: {beforePercent:F2}% used ({FormatBytes(beforeAvailable)} free)");
+                NewDesign.CurrentForm?.AddLauncherLog("");
 
                 Process[] processes = Process.GetProcesses();
                 int cleaned = 0;
@@ -103,6 +104,7 @@ namespace MemoryCleaner
                             NewDesign.CurrentForm?.AddLauncherLog("Clearing standby cache...");
                             Win32_NtSetSystemInformation.ClearStandbyCache();
                             NewDesign.CurrentForm?.AddLauncherLog("Standby cache cleared.");
+                            NewDesign.CurrentForm?.AddLauncherLog("");
                         }
                         catch (Exception ex)
                         {
@@ -128,8 +130,10 @@ namespace MemoryCleaner
                     freed >= 0
                         ? $"Approx. freed: {FormatBytes((ulong)freed)} ({beforePercent - afterPercent:F2}%)"
                         : $"Approx. change: {FormatBytes((ulong)Math.Abs(freed))} more in use ({beforePercent - afterPercent:F2}%)");
+                NewDesign.CurrentForm?.AddLauncherLog("");
                 NewDesign.CurrentForm?.AddLauncherLog(
                     $"Done — cleaned: {cleaned}, blacklisted: {ignoredBlacklist}, skipped: {ignoredSystem}");
+                NewDesign.CurrentForm?.AddSeparator();
             }
             catch (Exception ex)
             {

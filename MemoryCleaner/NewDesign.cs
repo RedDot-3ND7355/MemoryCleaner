@@ -78,6 +78,12 @@ namespace MemoryCleaner
 
             // Reset Launcher Log
             ResetLauncherLog();
+
+            // Check for Updates on Startup
+            if (SettingsHandler.Current.CheckForUpdatesOnStartup)
+            {
+                _ = UpdateChecker.CheckForUpdatesAsync(appver);
+            }
         }
 
         #endregion
@@ -236,11 +242,28 @@ namespace MemoryCleaner
                 Application.Exit();
             };
 
+            var checkUpdatesItem = new ToolStripMenuItem("Check for updates");
+            checkUpdatesItem.Click += async (_, _) => await UpdateChecker.CheckForUpdatesAsync(appver, manual: true);
+
+            var startupCheckItem = new ToolStripMenuItem("Check for updates on startup")
+            {
+                CheckOnClick = true,
+                Checked = SettingsHandler.Current.CheckForUpdatesOnStartup
+            };
+            startupCheckItem.CheckedChanged += (_, _) =>
+            {
+                SettingsHandler.Current.CheckForUpdatesOnStartup = startupCheckItem.Checked;
+                SettingsHandler.SaveSettings();
+            };
+
             menu.Items.Add(cleanItem);
             menu.Items.Add(openItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(_overlayToggleItem);
             menu.Items.Add(posMenu);
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(checkUpdatesItem);
+            menu.Items.Add(startupCheckItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(exitItem);
 
@@ -426,7 +449,18 @@ namespace MemoryCleaner
         {
             if (IsDisposed) return;
             if (InvokeRequired) { BeginInvoke(ResetLauncherLog); return; }
-            logTextBox.Text = "Start of log";
+            logTextBox.Text = "";
+        }
+
+        public void AddSection(string title)
+        {
+            AddLauncherLog("──────────────────────────────");
+            AddLauncherLog(title);
+        }
+
+        public void AddSeparator()
+        {
+            AddLauncherLog("──────────────────────────────");
         }
 
         public void AddLauncherLog(string log)
