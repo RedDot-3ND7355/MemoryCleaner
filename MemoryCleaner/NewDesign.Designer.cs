@@ -138,7 +138,6 @@ namespace MemoryCleaner
             // 
             // advancedlogsCheckBox
             // 
-            advancedlogsCheckBox.AutoSize = true;
             advancedlogsCheckBox.Depth = 0;
             advancedlogsCheckBox.Location = new System.Drawing.Point(7, 291);
             advancedlogsCheckBox.Margin = new Padding(0);
@@ -147,7 +146,7 @@ namespace MemoryCleaner
             advancedlogsCheckBox.Name = "advancedlogsCheckBox";
             advancedlogsCheckBox.ReadOnly = false;
             advancedlogsCheckBox.Ripple = true;
-            advancedlogsCheckBox.Size = new System.Drawing.Size(144, 37);
+            advancedlogsCheckBox.Size = new System.Drawing.Size(152, 37);
             advancedlogsCheckBox.TabIndex = 17;
             advancedlogsCheckBox.Text = "Advanced Logs";
             advancedlogsCheckBox.UseAccentColor = false;
@@ -156,7 +155,6 @@ namespace MemoryCleaner
             // 
             // startonbootCheckBox
             // 
-            startonbootCheckBox.AutoSize = true;
             startonbootCheckBox.Depth = 0;
             startonbootCheckBox.Location = new System.Drawing.Point(7, 254);
             startonbootCheckBox.Margin = new Padding(0);
@@ -165,7 +163,7 @@ namespace MemoryCleaner
             startonbootCheckBox.Name = "startonbootCheckBox";
             startonbootCheckBox.ReadOnly = false;
             startonbootCheckBox.Ripple = true;
-            startonbootCheckBox.Size = new System.Drawing.Size(127, 37);
+            startonbootCheckBox.Size = new System.Drawing.Size(152, 37);
             startonbootCheckBox.TabIndex = 16;
             startonbootCheckBox.Text = "Start on boot";
             startonbootCheckBox.UseAccentColor = false;
@@ -174,7 +172,6 @@ namespace MemoryCleaner
             // 
             // clearstandbymemCheckBox
             // 
-            clearstandbymemCheckBox.AutoSize = true;
             clearstandbymemCheckBox.Checked = true;
             clearstandbymemCheckBox.CheckState = CheckState.Checked;
             clearstandbymemCheckBox.Depth = 0;
@@ -195,7 +192,7 @@ namespace MemoryCleaner
             // startminimizedCheckBox
             // 
             startminimizedCheckBox.Depth = 0;
-            startminimizedCheckBox.Location = new System.Drawing.Point(158, 254);
+            startminimizedCheckBox.Location = new System.Drawing.Point(159, 254);
             startminimizedCheckBox.Margin = new Padding(0);
             startminimizedCheckBox.MouseLocation = new System.Drawing.Point(-1, -1);
             startminimizedCheckBox.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
@@ -374,6 +371,8 @@ namespace MemoryCleaner
             AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new System.Drawing.Size(362, 616);
+            Controls.Add(clearstandbymemCheckBox);
+            Controls.Add(startminimizedCheckBox);
             Controls.Add(materialLabel4);
             Controls.Add(aboutButton);
             Controls.Add(minimizeToTrayButton);
@@ -383,8 +382,6 @@ namespace MemoryCleaner
             Controls.Add(intervalComboBox);
             Controls.Add(advancedlogsCheckBox);
             Controls.Add(startonbootCheckBox);
-            Controls.Add(clearstandbymemCheckBox);
-            Controls.Add(startminimizedCheckBox);
             Controls.Add(materialCard1);
             Controls.Add(cleanButton);
             FormStyle = ReaLTaiizor.Enum.Material.FormStyles.ActionBar_None;
